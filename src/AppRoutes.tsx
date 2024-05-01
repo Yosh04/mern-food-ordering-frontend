@@ -1,12 +1,20 @@
-import {Navigate, Route, Routes} from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './layouts/layout'
+import Home from './pages/Home'
+import AuthCallbackPage from './pages/AuthCallbackPage'
+import UserProfilePage from './pages/UserProfilePage'
+import ProtectedRoute from './auth/ProtectedRoute'
 
 function AppRoutes() {
   return (
     <Routes>
-        <Route path='/' element={<Layout>Home page.</Layout>}/>
-        <Route path='/user-profile' element={<span>Home page12 2</span>}/>
-        <Route path='*' element={<Navigate to={'/'}/>}/>
+      <Route path='/' element={<Layout showHero={true}><Home /></Layout>} />
+      <Route path='/auth-callback' element={<AuthCallbackPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path='/user-profile' element={<Layout showHero={false}><UserProfilePage /></Layout>} />
+      </Route>
+
+      <Route path='*' element={<Navigate to={'/'} />} />
     </Routes>
   )
 }

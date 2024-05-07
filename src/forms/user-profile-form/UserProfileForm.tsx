@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import LoadingButton from '@/components/LoadingButton';
 import { Button } from '@/components/ui/button';
@@ -17,15 +17,17 @@ const formSchema = z.object({
     city: z.string().min(1, 'city is required'),
 });
 
-type UserFormData = z.infer<typeof formSchema>;
+export type UserFormData = z.infer<typeof formSchema>;
 
 type Props = {
     onSave: (userProfileData: UserFormData) => void;
     isLoading: boolean;
-    currentUser: User
+    currentUser: User;
+    title?: string;
+    buttonText?: string;
 }
 
-function UserProfileForm({currentUser, onSave, isLoading }: Props) {
+function UserProfileForm({currentUser, onSave, isLoading, title = 'User Profile', buttonText= 'Submit'}: Props) {
     const form = useForm<UserFormData>({
         resolver: zodResolver(formSchema),
         defaultValues: currentUser,
@@ -42,8 +44,11 @@ function UserProfileForm({currentUser, onSave, isLoading }: Props) {
             >
                 <div>
                     <h2 className='text-2xl font-bold'>
-                        View and change your profile information here.
+                        {title}
                     </h2>
+                    <FormDescription>
+                        View and change your profile information here.
+                    </FormDescription>
                 </div>
                 <FormField
                     control={form.control}
@@ -119,11 +124,9 @@ function UserProfileForm({currentUser, onSave, isLoading }: Props) {
                 </div>
                 {isLoading ?
                     (<LoadingButton />)
-                    : (<Button type='submit' className=' bg-orange-500'>Submit</Button>
+                    : (<Button type='submit' className=' bg-orange-500'>{buttonText}</Button>
                     )
                 }
-
-
             </form>
         </Form >
     );

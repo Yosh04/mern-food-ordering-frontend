@@ -1,13 +1,41 @@
 import { SearchState } from "@/pages/SearchPage";
-import { RestaurantSearchResponse } from "@/types";
+import { Restaurant, RestaurantSearchResponse } from "@/types";
 import { useQuery } from "react-query";
+import { useGetMyRestaurant } from "./MyRestaurantApi";
 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
+export const useGetRestaurant = (restaurantId?:string) => {
+
+    const getRestaurantByIdRequest = async ():Promise<Restaurant>=>{
+        const response = await fetch(`${API_BASE_URL}/api/restaurant/${restaurantId}`);
+
+        if(!response){
+            throw new Error('Failed to get restaurant');
+        }
+
+        return response.json();
+    };
+
+    const {data: restaurant, isLoading} = useQuery(
+        "fetchRestaurant", 
+        getRestaurantByIdRequest,
+        {
+            enabled: !!restaurantId,
+
+        }
+    );
+
+    return {
+        restaurant, 
+        isLoading
+    }
+}
+
 export const useSearchRestaurants = (searchState: SearchState, city?: string) => {
-    const createSearchRequest = async(): Promise<RestaurantSearchResponse>=>{
+    const createSearchRequest = async (): Promise<RestaurantSearchResponse> => {
         const params = new URLSearchParams();
 
         params.set('searchQuery', searchState.searchQuery);
@@ -19,20 +47,20 @@ export const useSearchRestaurants = (searchState: SearchState, city?: string) =>
             `${API_BASE_URL}/api/restaurant/search/${city}?${params.toString()}`
         );
 
-        if(!response){
+        if (!response) {
             throw new Error('Failed to get restaurant');
         }
 
         return response.json();
     };
 
-    const { 
-        data: results, 
+    const {
+        data: results,
         isLoading
     } = useQuery(
         ['searchRestaurant', searchState],
         createSearchRequest,
-        {enabled: !!city}
+        { enabled: !!city }
     );
 
     return {
@@ -40,6 +68,5 @@ export const useSearchRestaurants = (searchState: SearchState, city?: string) =>
         isLoading
     };
 
-    }
+}
 
-   

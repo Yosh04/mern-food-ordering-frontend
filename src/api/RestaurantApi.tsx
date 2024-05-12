@@ -1,7 +1,6 @@
 import { SearchState } from "@/pages/SearchPage";
 import { Restaurant, RestaurantSearchResponse } from "@/types";
 import { useQuery } from "react-query";
-import { useGetMyRestaurant } from "./MyRestaurantApi";
 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;

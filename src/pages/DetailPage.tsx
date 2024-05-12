@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom"
 import { MenuItem as MenuItemType } from '../types';
 import CheckoutButton from "@/components/CheckoutButton";
 import { UserFormData } from "@/forms/user-profile-form/UserProfileForm";
+import { useCreateCheckoutSession } from "@/api/OrderApi";
 
 export type CartItem = {
     _id: string;
@@ -20,9 +21,10 @@ export type CartItem = {
 function DetailPage() {
     const { restaurantId } = useParams();
     const { restaurant, isLoading } = useGetRestaurant(restaurantId);
+    const { isLoading: isCheckourtLoading, createCheckoutSession } = useCreateCheckoutSession();
 
 
-    const [cartItems, setCartItems] = useState<CartItem[]>( ()=>{
+    const [cartItems, setCartItems] = useState<CartItem[]>(() => {
         const storedCartItems = sessionStorage.getItem(`cartItems-${restaurantId}`);
         return storedCartItems ? JSON.parse(storedCartItems) : [];
     });
@@ -78,8 +80,36 @@ function DetailPage() {
         });
     }
 
-    const onCheckout = (userFormData: UserFormData)=>{
-        console.log('userFormData', userFormData );
+    const onCheckout = async (userFormData: UserFormData) => {
+        console.log('userFormData', userFormData);
+
+        //Asegura que siempre exista un restaurante.
+        if (!restaurant) {
+            return;
+        }
+
+        const checkoutData = {
+            cartItems: cartItems.map((cartItem) => ({
+                menuItemId: cartItem._id,
+                name: cartItem.name,
+                quantity: cartItem.quantity.toString(),
+            })),
+            restaurantId: restaurant._id,
+            deliveryDetails: {
+                email: userFormData.email as string,
+                name: userFormData.name,
+                addressLine1: userFormData.addressLine1,
+                country: userFormData.country,
+                city: userFormData.city,
+            },
+        };
+
+        console.log(checkoutData);
+
+        const data = await createCheckoutSession(checkoutData);
+
+        console.log(data.url);
+        window.location.href = data.url;
     }
 
     if (isLoading || !restaurant) {
@@ -103,10 +133,14 @@ function DetailPage() {
                 </div>
                 <div>
                     <Card>
-                        <OrderSummary restaurant={restaurant} cardItems={cartItems} removeFromCart={removeFromCart}/>
+                        <OrderSummary restaurant={restaurant} cardItems={cartItems} removeFromCart={removeFromCart} />
                     </Card>
                     <CardFooter>
-                        <CheckoutButton disabled={cartItems.length === 0} onCheckout={onCheckout}/>
+                        <CheckoutButton 
+                        disabled={cartItems.length === 0} 
+                        onCheckout={onCheckout} 
+                        isLoading={isCheckourtLoading}
+                        />
                     </CardFooter>
                 </div>
             </div>
